@@ -2,6 +2,8 @@
 node_modules
 package-lock.json
 /dist
+/ssl
+../db
 
 
 # local env files
