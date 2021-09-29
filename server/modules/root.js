@@ -1,10 +1,9 @@
 const Router = require('koa-router')
 
 const router = new Router()
-const { groups } = require('../modules/groups')
 
 router.get('/', async ctx => {
-  ctx.body = tree(await ctx.app.db.groups(), 0)
+  ctx.body = tree(await ctx.db.groups(), 0)
 })
 
 function tree(nodes, parentId) {
@@ -19,10 +18,10 @@ function tree(nodes, parentId) {
         sort: node.sort
       }
       if (children.length > 0) {
-        obj.children = children.sort((a, b) => a.sort - b.sort)
+        obj.children = children.sort((a, b) => a.sort - b.sort).map(r => ({ id: r.id, name: r.name }))
       }
       return [...acc, obj]
-    }, []).sort((a, b) => a.sort - b.sort)
+    }, []).sort((a, b) => a.sort - b.sort).map(r => ({ id: r.id, name: r.name, children: r.children }))
 }
 
 module.exports = router

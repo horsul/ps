@@ -1,36 +1,47 @@
-const fs = require('fs').promises
 const http = require('http')
 const https = require('https')
 const path = require('path')
 
+const config = require('./config')
+
 const Koa = require('koa')
+const Router = require('koa-router')
 const Sqlite = require('./db/sqlite')
 
-const router = require('./router/router')
+const rootModule = require('./modules/root')
 
-const app = new Koa()
+async function createApp() {
+  const app = new Koa()
+  const router = new Router()
 
-app.use(router.routes())
-app.use(router.allowedMethods())
+  router.use('/', rootModule.routes())
+
+  // router.use('/auth', authModule.routes())
+  // router.use(
+  //   jwtMiddleware({
+  //     secret: config.secret
+  //   })
+  // )
+
+  app.use(router.allowedMethods())
+  app.use(router.routes())
+
+  app.context.db = await Sqlite.init(path.resolve(__dirname, '../db/db.db'))
+
+  return app
+}
 
 ;(async function () {
-  const credentials = {
-    key: await fs.readFile(path.resolve(__dirname, './ssl/private.key'), 'utf8'),
-    cert: await fs.readFile(path.resolve(__dirname, './ssl/vzljot.pem'), 'utf8')
-  }
+  const app = await createApp()
 
   const httpServer = http.createServer(app.callback())
-  const httpsServer = https.createServer(credentials, app.callback())
+  const httpsServer = https.createServer(config.https.options, app.callback())
 
-  Sqlite.init(path.resolve(__dirname, '../db/db.db')).then(db => {
-    app.db = db
+  httpServer.listen(config.http.port, () => {
+    console.log('Http сервер стартовал на порту: ' + config.http.port)
+  })
 
-    httpServer.listen(3000, () => {
-      console.log('Http сервер стартовал на порту: ' + 3000)
-    })
-
-    httpsServer.listen(3001, () => {
-      console.log('Https сервер стартовал на порту: ' + 3001)
-    })
+  httpsServer.listen(config.https.port, () => {
+    console.log('Https сервер стартовал на порту: ' + config.https.port)
   })
 })()
