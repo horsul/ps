@@ -1,17 +1,36 @@
+const fs = require('fs').promises
+const http = require('http')
 const https = require('https')
 const path = require('path')
 
+const Koa = require('koa')
 const Sqlite = require('./db/sqlite')
 
-Sqlite.init(path.resolve(__dirname, '../db/db.db')).then(db => {
-    console.log('db created')
-//   app.set('db', db)
+const router = require('./router/router')
 
-//   httpsServer.listen(port, () => {
-//     console.log('Сервер стартовал на порту: ' + port)
-//   })
+const app = new Koa()
 
-//   app.set('ips', ips)
-})
+app.use(router.routes())
+app.use(router.allowedMethods())
 
-console.log('started')
+;(async function () {
+  const credentials = {
+    key: await fs.readFile(path.resolve(__dirname, './ssl/private.key'), 'utf8'),
+    cert: await fs.readFile(path.resolve(__dirname, './ssl/vzljot.pem'), 'utf8')
+  }
+
+  const httpServer = http.createServer(app.callback())
+  const httpsServer = https.createServer(credentials, app.callback())
+
+  Sqlite.init(path.resolve(__dirname, '../db/db.db')).then(db => {
+    app.db = db
+
+    httpServer.listen(3000, () => {
+      console.log('Http сервер стартовал на порту: ' + 3000)
+    })
+
+    httpsServer.listen(3001, () => {
+      console.log('Https сервер стартовал на порту: ' + 3001)
+    })
+  })
+})()

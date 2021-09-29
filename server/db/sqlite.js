@@ -16,9 +16,9 @@ class Sqlite {
       driver: sqlite3.Database
     })
 
-    for (const table of tables) {
-      await db.exec(`drop table if exists ${table}`)
-    }
+    // for (const table of tables) {
+    //   await db.exec(`drop table if exists ${table}`)
+    // }
 
     await db.exec(`create table if not exists groups (
         id_groups integer primary key,
@@ -173,9 +173,17 @@ class Sqlite {
         id_user integer not null default 0
     )`)
 
-    await importData(db, tables)
+    // await importData(db, tables)
 
     return new Sqlite(db)
+  }
+
+  async groups() {
+    try {
+      return await this.db.all(`select id_groups as id, sort_groups as sort, name_groups as name, belong_groups as parentId from groups where visibility = 1`)
+    } catch (error) {
+      console.log('err', error)
+    }
   }
 }
 
@@ -202,24 +210,24 @@ async function importData(db, tables) {
 
     const rows = array
       .filter((r, i) => i > 0 && r.trim() !== '')
-      .map(row =>
-        `(${row
-          .split(separator)
-          .map((r, i) => {
-            if (dateIndexes && dateIndexes.includes(i) && r) {
-              return new Date(r.replace(trimMask, '')).getTime()
-            }
-            if (r === '') {
-              return 'null'
-            }
-            return r
-          })
-          .join(', ')})`
-      ).join(', ')
+      .map(
+        row =>
+          `(${row
+            .split(separator)
+            .map((r, i) => {
+              if (dateIndexes && dateIndexes.includes(i) && r) {
+                return new Date(r.replace(trimMask, '')).getTime()
+              }
+              if (r === '') {
+                return 'null'
+              }
+              return r
+            })
+            .join(', ')})`
+      )
+      .join(', ')
 
     await db.exec(`insert into ${table} (${columns.join(', ')}) values ${rows};`)
-
-    console.log(table)
   }
 }
 

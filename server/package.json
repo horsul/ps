@@ -10,6 +10,8 @@
   "author": "melnikov",
   "license": "ISC",
   "dependencies": {
+    "koa": "^2.13.3",
+    "koa-router": "^10.1.1",
     "sqlite": "^4.0.23",
     "sqlite3": "^5.0.2"
   }
