@@ -9,7 +9,7 @@ class Sqlite {
   }
 
   static async init(path) {
-    const tables = ['groups', 'orders', 'parameters', 'parameters_value', 'users', 'users_discount', 'users_field', 'ware_orders', 'wares', 'wares_unorder']
+    const tables = ['groups', 'orders', 'parameters', 'parameters_value', 'users', 'users_discount', 'users_token', 'users_field', 'ware_orders', 'wares', 'wares_unorder']
 
     const db = await open({
       filename: path,
@@ -129,6 +129,12 @@ class Sqlite {
         select_field text
     )`)
 
+    await db.exec(`create table if not exists users_token (
+      id_token integer primary key,
+      token text not null,
+      id_user integer not null
+  )`)
+
     await db.exec(`create table if not exists ware_orders (
         id integer primary key,
         id_orders integer not null default 0,
@@ -173,7 +179,7 @@ class Sqlite {
         id_user integer not null default 0
     )`)
 
-    // await importData(db, tables)
+    // await importData(db)
 
     return new Sqlite(db)
   }
@@ -185,9 +191,58 @@ class Sqlite {
       console.log('err', error)
     }
   }
+
+  async users() {
+    try {
+      return await this.db.all(`select id_user as id, name_user as name, s_name_user as surname, o_name_user as o_name, email_user as email, password from users`)
+    } catch (error) {
+      console.log('err', error)
+    }
+  }
+
+  async user(id) {
+    try {
+      return await this.db.get(`select * from users where id_user = ?`, id)
+    } catch (error) {
+      console.log('err', error)
+    }
+  }
+
+  async token(token) {
+    try {
+      return await this.db.get(`select * from users_token where token = ?`, token)
+    } catch (error) {
+      console.log('err', error)
+    }
+  }
+
+  async addToken({ token, id_user }) {
+    try {
+      return await this.db.run(`insert into users_token (token, id_user) values(?, ?)`, [token, id_user])
+    } catch (error) {
+      console.log('err', error)
+    }
+  }
+
+  async removeTokenByUser({ id_user }) {
+    try {
+      return await this.db.run(`delete from users_token where id_user = ?`, id_user)
+    } catch (error) {
+      console.log('err', error)
+    }
+  }
+
+  async userByEmail(email) {
+    try {
+      return await this.db.get(`select * from users where email_user = ?`, email)
+    } catch (error) {
+      console.log('err', error)
+    }
+  }
 }
 
-async function importData(db, tables) {
+async function importData(db) {
+  const tables = ['groups', 'orders', 'parameters', 'parameters_value', 'users', 'users_discount', 'users_field', 'ware_orders', 'wares', 'wares_unorder']
   const separator = ';'
   const trimMask = /^\"+|\"+$/g
 

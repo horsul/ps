@@ -2,26 +2,30 @@ const http = require('http')
 const https = require('https')
 const path = require('path')
 
-const config = require('./config')
-
 const Koa = require('koa')
 const Router = require('koa-router')
+const jwtMiddleware = require('koa-jwt')
+
+const config = require('./config')
 const Sqlite = require('./db/sqlite')
 
+const authModule = require('./modules/auth')
 const rootModule = require('./modules/root')
+const userModule = require('./modules/users')
 
 async function createApp() {
   const app = new Koa()
   const router = new Router()
 
   router.use('/', rootModule.routes())
+  router.use('/auth', authModule.routes())
+  router.use(
+    jwtMiddleware({
+      secret: config.secret
+    })
+  )
 
-  // router.use('/auth', authModule.routes())
-  // router.use(
-  //   jwtMiddleware({
-  //     secret: config.secret
-  //   })
-  // )
+  router.use('/user', userModule.routes())
 
   app.use(router.allowedMethods())
   app.use(router.routes())
