@@ -18,6 +18,12 @@ async function createApp() {
   const app = new Koa()
   const router = new Router()
 
+  app.use(
+    cors({
+      origin: config.origin,
+      credentials: true
+    })
+  )
   router.use('/', rootModule.routes())
   router.use('/auth', authModule.routes())
   router.use(
@@ -28,7 +34,6 @@ async function createApp() {
 
   router.use('/user', userModule.routes())
 
-  app.use(cors())
   app.use(router.allowedMethods())
   app.use(router.routes())
 

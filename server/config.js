@@ -12,5 +12,6 @@ module.exports = {
       cert: fs.readFileSync(path.resolve(__dirname, 'ssl/vzljot.pem'), 'utf8')
     }
   },
-  secret: 'jlkjk;j;lkjkjiioiiuiyy][piiiuyttrewssz'
+  secret: 'jlkjk;j;lkjkjiioiiuiyy][piiiuyttrewssz',
+  origin: 'http://localhost:8080'
 }
