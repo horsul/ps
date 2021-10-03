@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('uuid')
 const router = new Router()
 
 router.post('/login', bodyparser(), async ctx => {
+
   const { login, password } = ctx.request.body
   const user = await ctx.db.userByEmail(login)
 
@@ -19,7 +20,9 @@ router.post('/login', bodyparser(), async ctx => {
     throw error
   }
 
-  ctx.body = await issue(ctx.db, { id: user.id_user, email: user.email_user })
+  const pair = await issue(ctx.db, { id: user.id_user })
+
+  ctx.body = pair
 })
 
 router.post('/refresh', bodyparser(), async ctx => {
@@ -39,7 +42,7 @@ router.post('/refresh', bodyparser(), async ctx => {
     token: refreshToken
   })
 
-  ctx.body = await issue(ctx.db, { id: dbToken.id_user, email: dbToken.email_user })
+  ctx.body = await issue(ctx.db, { id: dbToken.id_user })
 })
 
 router.post('/logout', jwtMiddleware({ secret: config.secret }), async ctx => {
@@ -59,7 +62,7 @@ async function issue(db, user) {
   })
 
   return {
-    token: jwt.sign(user, config.secret),
+    token: jwt.sign(user, config.secret, { expiresIn: 60 * 60 }),
     refreshToken
   }
 }

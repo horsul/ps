@@ -5,6 +5,7 @@ const path = require('path')
 const Koa = require('koa')
 const Router = require('koa-router')
 const jwtMiddleware = require('koa-jwt')
+const cors = require('@koa/cors')
 
 const config = require('./config')
 const Sqlite = require('./db/sqlite')
@@ -27,6 +28,7 @@ async function createApp() {
 
   router.use('/user', userModule.routes())
 
+  app.use(cors())
   app.use(router.allowedMethods())
   app.use(router.routes())
 
