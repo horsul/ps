@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('uuid')
 const router = new Router()
 
 router.post('/login', bodyparser(), async ctx => {
+
   const { login, password } = ctx.request.body
   const user = await ctx.db.userByEmail(login)
 
@@ -47,6 +48,15 @@ router.post('/logout', jwtMiddleware({ secret: config.secret }), async ctx => {
 
   await ctx.db.removeTokenByUser({ id_user })
 
+  ctx.cookies.set('jwt', '', {
+    // domain: 'localhost',
+    path: '/auth',
+    httpOnly: true,
+    // secure: true,
+    sameSite: 'none',
+    maxAge: 0
+  })
+
   ctx.body = { success: true }
 })
 
@@ -58,7 +68,14 @@ async function issue(ctx, user) {
     id_user: user.id
   })
 
-  ctx.cookies.set('jwt', refreshToken, { httpOnly: true, secure: true , sameSite: 'none'})
+  ctx.cookies.set('jwt', refreshToken, {
+    // domain: 'localhost',
+    path: '/auth',
+    httpOnly: true,
+    // secure: true,
+    sameSite: 'none',
+    maxAge: 30 * 24 * 60 * 60 * 1000
+  })
 
   return {
     token: jwt.sign(user, config.secret, { expiresIn: 60 * 60 }),

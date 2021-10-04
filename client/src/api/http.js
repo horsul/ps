@@ -2,20 +2,20 @@ import axios from 'axios'
 import config from '../config'
 
 export default class Http {
-  constructor({
-    token = null,
-    refreshToken = null,
-    client = axios.create({
-      baseURL: config.server
-    })
-  }) {
+  constructor({ token = null, refreshToken = null }) {
+    console.log('create ', token, refreshToken)
     this.token = token
     this.refreshToken = refreshToken
-    this.client = client
+    this.client = axios.create({
+      baseURL: config.server,
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
 
     this.client.interceptors.request.use(
       config => {
-        console.log('lkdngf', this.token)
         if (!this.token) {
           return config
         }
@@ -36,13 +36,18 @@ export default class Http {
     const {
       data: { token, refreshToken }
     } = await this.client.post('/auth/login', { login, password })
-
     this.token = token
     this.refreshToken = refreshToken
 
-    return {
-      token,
-      refreshToken
-    }
+    return { token, refreshToken }
+  }
+
+  async logout() {
+    const { data } = await this.client.post('/auth/logout')
+
+    this.token = null
+    this.refreshToken = null
+
+    return data
   }
 }
