@@ -1,8 +1,12 @@
 <template>
-  <img alt="pipeshop.ru" src="./assets/logo.png" />
-  <button @click="onLogin">login</button>
-  <button @click="onLogout">logout</button>
-  <HelloWorld msg="Welcome to Your Vue.js App" />
+  <div class="wrap">
+    <img alt="pipeshop.ru" src="./assets/logo.gif" />
+    <button @click="onLogin">login</button>
+    <button @click="onLogout">logout</button>
+    <button @click="onUsers">users</button>
+    <button><i class="fas fa-thumbs-up"></i> Like</button>
+    <HelloWorld msg="Welcome to Your Vue.js App" />
+  </div>
 </template>
 
 <script>
@@ -28,18 +32,37 @@ export default {
     async onLogout() {
       await this.http.logout()
       this.http = new Http({})
+    },
+    async onUsers() {
+      const { data } = await this.http.client.get('/user')
+      console.log('users', data)
     }
   }
 }
 </script>
 
-<style>
-#app {
+<style scoped>
+@media screen and (min-width: 1140px) {
+  .wrap {
+    box-shadow: 0 0 12px #ccc;
+    margin-top: 10px;
+    padding: 10px 20px;
+    border-bottom: none;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #2c3e50;
+  }
+}
+
+.wrap {
+  min-height: 700px;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-bottom: 1px solid #ccc;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

@@ -3,7 +3,19 @@ const Router = require('koa-router')
 const router = new Router()
 
 router.get('/', async ctx => {
-  ctx.body = tree(await ctx.db.groups(), 0)
+
+  const result = {
+    groups: tree(await ctx.db.groups(), 0)
+  }
+
+  const token = ctx.cookies.get('jwt')
+
+  if (token) {
+    const user = await ctx.db.userByToken(token)
+    result.user = user
+  }
+
+  ctx.body = result
 })
 
 function tree(nodes, parentId) {
@@ -21,7 +33,9 @@ function tree(nodes, parentId) {
         obj.children = children.sort((a, b) => a.sort - b.sort).map(r => ({ id: r.id, name: r.name }))
       }
       return [...acc, obj]
-    }, []).sort((a, b) => a.sort - b.sort).map(r => ({ id: r.id, name: r.name, children: r.children }))
+    }, [])
+    .sort((a, b) => a.sort - b.sort)
+    .map(r => ({ id: r.id, name: r.name, children: r.children }))
 }
 
 module.exports = router

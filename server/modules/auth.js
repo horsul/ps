@@ -49,10 +49,9 @@ router.post('/logout', jwtMiddleware({ secret: config.secret }), async ctx => {
   await ctx.db.removeTokenByUser({ id_user })
 
   ctx.cookies.set('jwt', '', {
-    // domain: 'localhost',
-    path: '/auth',
+    path: '/',
     httpOnly: true,
-    // secure: true,
+    secure: true,
     sameSite: 'none',
     maxAge: 0
   })
@@ -69,10 +68,9 @@ async function issue(ctx, user) {
   })
 
   ctx.cookies.set('jwt', refreshToken, {
-    // domain: 'localhost',
-    path: '/auth',
+    path: '/',
     httpOnly: true,
-    // secure: true,
+    secure: true,
     sameSite: 'none',
     maxAge: 30 * 24 * 60 * 60 * 1000
   })

@@ -239,6 +239,14 @@ class Sqlite {
       console.log('err', error)
     }
   }
+
+  async userByToken(token) {
+    try {
+      return await this.db.get(`select u.* from users u inner join users_token t on u.id_user = t.id_user where token = ?`, token)
+    } catch (error) {
+      console.log('err', error)
+    }
+  }
 }
 
 async function importData(db) {
